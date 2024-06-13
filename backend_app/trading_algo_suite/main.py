@@ -1,4 +1,10 @@
+from backend_app.trading_algo_suite.backtesting.backtest_mean_reversion import backtest_mean_reversion_strategy, \
+    plot_balance
 from backend_app.trading_algo_suite.data.acquisition import DataAcquisition
+from backend_app.trading_algo_suite.performance_metrics.metrics import performance_metrics
+from backend_app.trading_algo_suite.strategies.mean_reversion import mean_reversion_strategy
+from backend_app.trading_algo_suite.features.twap import calculate_standard_twap, calculate_rolling_twap, \
+    calculate_intraday_twap, visualize_twaps
 from backend_app.trading_algo_suite.features.vwap import calculate_standard_vwap, calculate_rolling_vwap, \
     calculate_intraday_vwap, visualize_vwaps
 
@@ -66,3 +72,17 @@ if __name__ == "__main__":
     # df = calculate_intraday_vwap(df)
     # visualize_vwaps(df, 'vwap_plot.png')
     # print(df)
+
+    # candle_1m = data.fetch_ohlcv_for_timeframe('BTC/USD:BTC', '1m', None, 5000)
+    # df = calculate_standard_twap(candle_1m)
+    # df = calculate_rolling_twap(df, 14)
+    # df = calculate_intraday_twap(df)
+    # visualize_twaps(df, 'twap_plot.png')
+    # print(df)
+
+    # candle_1m = data.fetch_ohlcv_for_timeframe('BTC/USD:BTC', '1m', None, 5000)
+    # df = mean_reversion_strategy(candle_1m)
+    # backtest_results = backtest_mean_reversion_strategy(df)
+    # plot_balance(backtest_results)
+    # print(backtest_results)
+    # performance_metrics(backtest_results, 5000)
