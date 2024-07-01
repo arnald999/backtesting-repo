@@ -40,3 +40,5 @@ websocket-client-1.8.0
 
 pandas==2.2.2
 matplotlib==3.9.0
+
+backtrader==1.9.78.123
