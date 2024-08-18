@@ -1,4 +1,4 @@
-from strat_frame.data_pull.data_connection import DataAcquisition
+from data_pull.data_connection import DataConnection
 
 if __name__ == '__main__':
     """
@@ -10,9 +10,13 @@ if __name__ == '__main__':
     """
 
     # symbol='BTC/USD:BTC', history={"from": None, "to": None}
-    data = DataAcquisition()
-
-    iter_candles = data.time_bar(bar_count="1m")
+    data = DataConnection(exchange="Binance")
+    data.store_exchange_raw_data(from_date="2021-01-01", to_date="2021-12-31")
+    # x = data.fetch_raw_data(("2021-01-02", "2021-01-03"))
+    # iter_data = data.fetch_raw_data(("2019-01-01", "2019-02-01"))
+    # x = data.fetch_raw_data(1)
+    pass
+    # iter_candles = data.time_bar(bar_count="1m") 2024-08-10
 
     """
     FEATURES: Create features
@@ -20,6 +24,8 @@ if __name__ == '__main__':
         Methodology: Calculate features
         Outputs: iterable object
     """
+
+
 
     """
     BACKTEST: Backtesting

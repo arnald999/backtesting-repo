@@ -9,3 +9,7 @@ Return:
     - Return iterable time/volume candles
 
 """
+
+import os
+
+DIR_PATH = os.path.join(os.path.dirname(__file__))
