@@ -1,4 +1,5 @@
 from data_pull.data_connection import DataConnection
+from bars.bars import VolumeBars
 
 if __name__ == '__main__':
     """
@@ -10,13 +11,19 @@ if __name__ == '__main__':
     """
 
     # symbol='BTC/USD:BTC', history={"from": None, "to": None}
-    data = DataConnection(exchange="Binance")
-    data.store_exchange_raw_data(from_date="2021-01-01", to_date="2021-12-31")
+    # data = DataConnection(exchange="Binance")
+    # data.store_exchange_raw_data(from_date="2023-01-01", to_date="2023-12-31")
     # x = data.fetch_raw_data(("2021-01-02", "2021-01-03"))
-    # iter_data = data.fetch_raw_data(("2019-01-01", "2019-02-01"))
-    # x = data.fetch_raw_data(1)
-    pass
-    # iter_candles = data.time_bar(bar_count="1m") 2024-08-10
+    data = DataConnection(exchange="Binance")
+    volume_bars = VolumeBars()
+    iter_data = data.fetch_raw_data(("2019-01-01", "2019-02-01"))
+    while True:
+        # x = data.fetch_raw_data(1)
+        iter_candles = volume_bars.update(next(iter_data)) # 2024-08-10
+
+    x = 0
+
+    # Think how to streamline data from self._data_bar List structure
 
     """
     FEATURES: Create features
@@ -25,6 +32,7 @@ if __name__ == '__main__':
         Outputs: iterable object
     """
 
+    # FIND A WAY TO USE SAME BAR CREATE FUNCTION FOR TICK AND FEATURE
 
 
     """

@@ -9,7 +9,7 @@ import polars as pl
 from functools import singledispatchmethod
 
 from . import DIR_PATH
-from strat_frame.constants import exchange_data_columns
+from constants import exchange_data_columns, OrderBook
 
 
 class DataConnection:
@@ -93,7 +93,7 @@ class DataConnection:
         Returns:
             Iterator: Row by row
         """
-        print("In")
+
         from_date, to_date = arg
         from_date_int = int(from_date[:4] + from_date[5:7] + from_date[8:10])
         to_date_int = int(to_date[:4] + to_date[5:7] + to_date[8:10])
@@ -114,8 +114,8 @@ class DataConnection:
                 _df = pl.read_parquet(os.path.join(dir_path, f"{curr_date_int}"))
                 _df = _df.transpose()
                 for row in _df.iter_columns():
-                    x = 0
-                    # yield row.to_numpy(allow_copy=False)
+                    # x = 0
+                    yield OrderBook(*row)
 
     @fetch_raw_data.register
     def _(self, arg: int):

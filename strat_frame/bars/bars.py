@@ -1,7 +1,8 @@
 import datetime
+from typing import List
 
-from .raw import Bar
-from strat_frame.constants import OrderBook
+from .raw import Tick, Bar
+from strat_frame.constants import OrderBook, BarBook
 
 
 class TimeBars(Bar):
@@ -29,9 +30,9 @@ class TimeBars(Bar):
         super().update(tick)
 
         is_new_bar: bool
-        if tick.exchange_timestamp - self._last_time > self._timedelta:
+        if self.exchange_timestamp - self._last_time > self._timedelta:
             is_new_bar = True
-            self._last_time = tick.exchange_timestamp
+            self._last_time = self.exchange_timestamp
         else:
             is_new_bar = False
 
@@ -42,4 +43,21 @@ class VolumeBars(Bar):
     def __init__(self, volume_threshold=20000):
         super().__init__()
         self._volumedelta: int = volume_threshold
-        self._last_time: int = 0
+        self._bar_volume: float = 0
+
+        self._data_bar: List[BarBook] = [BarBook()]
+
+    def update(self, tick: OrderBook):
+
+        if self._bar_volume > self._volumedelta:
+            self.is_new = True
+            self._bar_volume = self._tick.tick_volume
+        else:
+            self.is_new = False
+            self._bar_volume += self._tick.tick_volume
+
+        super().update(tick)
+        if self.is_new:
+            self._data_bar.append(self.book)
+        else:
+            self._data_bar[-1] = self.book

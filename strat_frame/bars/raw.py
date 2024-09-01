@@ -1,16 +1,12 @@
 import math
-from typing import List
 
-from strat_frame.constants import OrderBook, BarBook
+from strat_frame.constants import OrderBook, CandleBook, BarBook
 
 
 class Tick(object):
     def __init__(self):
         self._tick_snapshot = OrderBook()
         self._prv_volume = 0
-
-    def __getitem__(self, attr):
-        return getattr(self._tick_snapshot, attr)
 
     def __getattr__(self, attr):
         return getattr(self._tick_snapshot, attr)
@@ -19,75 +15,68 @@ class Tick(object):
     def tick_volume(self):
         return self._tick_snapshot.volume - self._prv_volume
 
+    @property
+    def book(self):
+        return self._tick_snapshot
+
     def update(self, tick: OrderBook):
         self._prv_volume = self._tick_snapshot.volume
 
         self._tick_snapshot = tick
 
 
-class Bar(Tick):
+class Candle(object):
+    def __init__(self):
+        self._tick = Tick()
+
+        self._book = self._curr_book()
+        self._prev_candle_close: float = math.nan
+        self.is_new: bool = False
+
+    def __getattr__(self, attr):
+        return getattr(self._book, attr)
+
+    def _curr_book(self) -> CandleBook:
+        return CandleBook()
+
+    def _initialize(self):
+        self._book.timestamp = self._tick.timestamp
+        self._book.open = self._tick.open
+        self._book.high = self._tick.high
+        self._book.low = self._tick.low
+        self._book.close = self._tick.close
+
+    @property
+    def book(self):
+        return self._book
+
+    def update(self, tick: OrderBook):
+        self._tick.update(tick)
+
+        if self.is_new:
+            self._prev_candle_close = self._book.close
+            self._initialize()
+
+        self._book.high = max(self._book.high, self._tick.high)
+        self._book.low  = min(self._book.low, self._tick.low)
+        self._book.close = self._tick.close
+        self._book.log_return = self._book.close / self._prev_candle_close
+
+
+class Bar(Candle):
     def __init__(self):
         super().__init__()
-        self._data_bar: List[BarBook] = [BarBook()]
 
-        self._high_low = tuple()
-        self._first_bar = True
-        self._last_bar_close, self._prev_ltp, self._prev_b = math.nan, math.nan, 1
+    def _curr_book(self) -> BarBook:
+        return BarBook()
 
-    def _bar_update(self, is_new_bar: bool):
-        _timestamp = self.timestamp
+    def _initialize(self):
+        super()._initialize()
+        self._book.volume = 0
 
-        data_bar = self._data_bar
-        bar_struct = data_bar[-1]
-        high_low = self._high_low
+    def update(self, tick: OrderBook):
+        super().update(tick)
 
-        _ltp = self.close
-        _high, _low = self.high, self.low
-        _volume = self.tick_volume
-
-        _b = _ltp - self._prev_ltp
-        if _b == 0 or math.isnan(_b):
-            _b = self._prev_b
-        else:
-            _b = int(_b / abs(_b))
-
-        if is_new_bar:
-            if self._first_bar:
-                self._first_bar = False
-            else:  # Adding last bar into the list
-                ret = math.log10(bar_struct.close / self._last_bar_close)
-                bar_struct.log_return = ret
-                self._last_bar_close = bar_struct.close
-                data_bar.append(BarBook())
-                bar_struct = data_bar[-1]
-
-            # Start creating new one
-            bar_struct.timestamp = _timestamp
-            bar_struct.open, bar_struct.high, bar_struct.low = _ltp, _ltp, _ltp
-
-            if len(high_low) > 0:
-                if high_low[0] != _high:
-                    bar_struct.high = _high
-                elif high_low[1] != _low:
-                    bar_struct.low = _low
-
-        else:
-            if _ltp > bar_struct.high:
-                bar_struct.high = _ltp
-            elif _ltp < bar_struct.low:
-                bar_struct.low = _ltp
-
-            if len(high_low) > 0:
-                if high_low[0] != _high:
-                    bar_struct.high = _high
-                elif high_low[1] != _low:
-                    bar_struct.low = _low
-
-            bar_struct.volume += _volume
-
-        bar_struct.close = _ltp
-        self._high_low = (_high, _low)
-        self._prev_ltp = _ltp
-        self._prev_b = _b
+        self._book.volume += self._tick.tick_volume
 
 
