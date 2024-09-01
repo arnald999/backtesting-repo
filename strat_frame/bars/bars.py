@@ -27,16 +27,18 @@ class TimeBars(Bar):
         return total_milliseconds
 
     def update(self, tick: OrderBook):
-        super().update(tick)
 
-        is_new_bar: bool
-        if self.exchange_timestamp - self._last_time > self._timedelta:
-            is_new_bar = True
+        if self.tick.timestamp - self._last_time > self._timedelta:
+            self.is_new = True
             self._last_time = self.exchange_timestamp
         else:
-            is_new_bar = False
+            self.is_new = False
 
-        self._bar_update(is_new_bar)
+        super().update(tick)
+        if self.is_new:
+            self._data_bar.append(self.book)
+        else:
+            self._data_bar[-1] = self.book
 
 
 class VolumeBars(Bar):
@@ -51,10 +53,10 @@ class VolumeBars(Bar):
 
         if self._bar_volume > self._volumedelta:
             self.is_new = True
-            self._bar_volume = self._tick.tick_volume
+            self._bar_volume = self.tick.tick_volume
         else:
             self.is_new = False
-            self._bar_volume += self._tick.tick_volume
+            self._bar_volume += self.tick.tick_volume
 
         super().update(tick)
         if self.is_new:
